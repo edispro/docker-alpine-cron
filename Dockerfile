@@ -6,6 +6,7 @@ RUN apk update && apk add dcron curl wget rsync ca-certificates && rm -rf /var/c
 RUN mkdir -p /var/log/cron && mkdir -m 0644 -p /var/spool/cron/crontabs && touch /var/log/cron/cron.log && mkdir -m 0644 -p /etc/cron.d
 
 COPY /scripts/* /
-
+RUN chmod  +x /docker-entry.sh
+RUN chmod  +x /docker-cmd.sh
 ENTRYPOINT ["/docker-entry.sh"]
 CMD ["/docker-cmd.sh"]
