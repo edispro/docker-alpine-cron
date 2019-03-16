@@ -175,7 +175,7 @@ if [ -d ${LOCAL_PATH} ]; then
   # Control will enter here if /data exists.
   echo "[`date '+%Y-%m-%d %H:%M:%S'`] Compressing ${LOCAL_PATH} folder…"
   cd ${LOCAL_PATH}
-  $TAR $TAR_OPTIONS $EXCLODE1_OPTIONS  $EXCLODE2_OPTIONS  $EXCLODE3_OPTIONS  $EXCLODE4_OPTIONS /backups/data-$FILE_DATE.tar.gz ./
+  $TAR $TAR_OPTIONS  $EXCLODE4_OPTIONS /backups/data-$FILE_DATE.tar.gz ./ $EXCLODE1_OPTIONS  $EXCLODE2_OPTIONS  $EXCLODE3_OPTIONS
 
   # Sending over FTP
   echo "[`date '+%Y-%m-%d %H:%M:%S'`] Sending ${LOCAL_PATH} folder over FTP…"
