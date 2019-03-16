@@ -124,7 +124,6 @@ shift $((${OPTIND} - 1))
 
 
 if [ "$LOCAL_PATH" == "" ]  || [ "$FTP_USER" == "" ]  || [ "$FTP_PASS" == "" ]  || [ "$FTP_HOST" == "" ]  || [ "$FTP_PORT" == "" ] || [ "$ REMOTE_PATH" == "" ]
-
 then
 usagefull && exit 0;
 fi
@@ -135,6 +134,28 @@ LFTP="$(which lftp)"
 GZIP="$(which gzip)"
 TAR_OPTIONS="-zcf"
 FILE_DATE=`date +%Y%m%d-%H%M`
+EXCLODE1_OPTIONS=""
+EXCLODE2_OPTIONS=""
+EXCLODE3_OPTIONS=""
+EXCLODE4_OPTIONS=""
+if [ -n "$EXCLODE1" ]
+then
+EXCLODE1_OPTIONS="--exclude $EXCLODE1"
+fi
+if [ -n "$EXCLODE2" ]
+then
+EXCLODE2_OPTIONS="--exclude $EXCLODE2"
+fi
+
+if [ -n "$EXCLODE3" ]
+then
+EXCLODE3_OPTIONS="--exclude $EXCLODE3"
+fi
+
+if [ -n "$EXCLODE4" ]
+then
+EXCLODE4_OPTIONS="--exclude $EXCLODE4"
+fi
 
 echo "[`date '+%Y-%m-%d %H:%M:%S'`] ============================================================="
 echo "[`date '+%Y-%m-%d %H:%M:%S'`] Begining new backup on ${FTP_PROTO}://${FTP_HOST}:${FTP_PORT}"
@@ -153,7 +174,8 @@ EOF
 if [ -d ${LOCAL_PATH} ]; then
   # Control will enter here if /data exists.
   echo "[`date '+%Y-%m-%d %H:%M:%S'`] Compressing ${LOCAL_PATH} folder…"
-  $TAR $TAR_OPTIONS /backups/data-$FILE_DATE.tar.gz ${LOCAL_PATH}
+  cd ${LOCAL_PATH}
+  $TAR $TAR_OPTIONS $EXCLODE1_OPTIONS  $EXCLODE2_OPTIONS  $EXCLODE3_OPTIONS  $EXCLODE4_OPTIONS /backups/data-$FILE_DATE.tar.gz ./
 
   # Sending over FTP
   echo "[`date '+%Y-%m-%d %H:%M:%S'`] Sending ${LOCAL_PATH} folder over FTP…"
