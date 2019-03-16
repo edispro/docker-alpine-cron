@@ -42,6 +42,7 @@ xordiv/docker-alpine-cron
 ```
 ---------------------------------
 Mysql Backup Script
+```
  SYNOPSIS
     /doBackupDatabase.sh 
 
@@ -58,9 +59,10 @@ Mysql Backup Script
    --FTP_PROTO=[ftp]            Protocol to use (default: ftp) ,sftp
    --REMOTE_PATH=[path]         Your FTP backup destination folder
    -h, --help                           print this help
-
+```
 --------------------------------
 File Backup Script 
+```
     SYNOPSIS
     /doBackupFile.sh 
 
@@ -77,6 +79,7 @@ File Backup Script
    --FTP_PROTO=[ftp]            Protocol to use (default: ftp) ,sftp
    --REMOTE_PATH=[path]         Your FTP backup destination folder
    -h, --help                           print this help
+   ```
 ---------
    #### Simple usage:
 ```
@@ -85,3 +88,4 @@ docker run --name="alpine-cron-sample" -d \
 -v /path/to/app/scripts:/scripts \
 -v /path/to/file/dir:/data \
 xordiv/d
+```
