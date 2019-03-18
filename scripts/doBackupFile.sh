@@ -123,17 +123,15 @@ done
 shift $((${OPTIND} - 1))
 
 
-if [ "$LOCAL_PATH" == "" ]  || [ "$FTP_USER" == "" ]  || [ "$FTP_PASS" == "" ]  || [ "$FTP_HOST" == "" ]  || [ "$FTP_PORT" == "" ] || [ "$ REMOTE_PATH" == "" ]
+if [ "$LOCAL_PATH" == "" ]  || [ "$FTP_USER" == "" ]  || [ "$FTP_PASS" == "" ]  || [ "$FTP_HOST" == "" ]  || [ "$FTP_PORT" == "" ] || [ "$REMOTE_PATH" == "" ]
 then
 usagefull && exit 0;
 fi
 
-MYSQLDUMP="$(which mysqldump)"
-TAR="$(which tar)"
+
+
 LFTP="$(which lftp)"
-GZIP="$(which gzip)"
-TAR_OPTIONS="-zcf"
-FILE_DATE=`date +%Y%m%d-%H%M`
+
 EXCLODE1_OPTIONS=""
 EXCLODE2_OPTIONS=""
 EXCLODE3_OPTIONS=""
@@ -160,38 +158,51 @@ fi
 echo "[`date '+%Y-%m-%d %H:%M:%S'`] ============================================================="
 echo "[`date '+%Y-%m-%d %H:%M:%S'`] Begining new backup on ${FTP_PROTO}://${FTP_HOST}:${FTP_PORT}"
 
-LFTP_CMD="-u ${FTP_USER},${FTP_PASS} ${FTP_PROTO}://${FTP_HOST}:${FTP_PORT}"
+
 
 if [ -n "$FTP_HOST" ]
 then
-# Create remote dir if does not exists
-echo "[`date '+%Y-%m-%d %H:%M:%S'`] Create remote dir if does not exists…"
-${LFTP} ${LFTP_CMD} <<EOF
-cd ${REMOTE_PATH} || mkdir -p ${REMOTE_PATH};
-bye;
-EOF
 
-if [ -d ${LOCAL_PATH} ]; then
-  # Control will enter here if /data exists.
-  echo "[`date '+%Y-%m-%d %H:%M:%S'`] Compressing ${LOCAL_PATH} folder…"
-  cd ${LOCAL_PATH}
-  $TAR $TAR_OPTIONS  $EXCLODE4_OPTIONS /backups/data-$FILE_DATE.tar.gz ./ $EXCLODE1_OPTIONS  $EXCLODE2_OPTIONS  $EXCLODE3_OPTIONS
 
-  # Sending over FTP
-  echo "[`date '+%Y-%m-%d %H:%M:%S'`] Sending ${LOCAL_PATH} folder over FTP…"
-  ${LFTP} ${LFTP_CMD} <<EOF
-cd ${REMOTE_PATH};
-put /backups/data-${FILE_DATE}.tar.gz;
-bye;
-EOF
-else
-  echo "[`date '+%Y-%m-%d %H:%M:%S'`] ${LOCAL_PATH} folder does not exists."
+trap "rm -f sync.lock" SIGINT SIGTERM
+
+if [ -e sync.lock ]
+then
+  echo "Sync is already running."
   exit 1
+else
+  touch sync.lock
+  lftp -u $FTP_USER,$FTP_PASS ${FTP_PROTO}://${FTP_HOST}:${FTP_PORT}${REMOTE_PATH} << EOF
+  ## Some ftp servers hide dot-files by default (e.g. .htaccess), and show them only when LIST command is used with -a option.
+  set ftp:list-options -a
+  ## if  true, try to negotiate SSL connection with ftp server for non-anonymous access. Default is true. This and other ssl settings are only available if lftp was compiled with an ssl/tls library.
+  set ftp:ssl-allow yes
+  ## specifies -n option for pget command used to transfer every single file under mirror. Default is 1 which disables pget.
+  set mirror:use-pget-n 5
+
+  ## --only-missing # download only missing files
+  ## --continue # continue a mirror job if possible
+  ## -P5 # download N files in parallel
+  ## --log=sync.log # write lftp commands being executed to FILE
+mirror\
+    -R\
+    -P5\
+    --verbose\
+    --delete\
+    --reverse\
+    --ignore-time \
+    --log=sync.log \
+    $LOCAL_PATH \
+    $EXCLODE1_OPTIONS \
+    $EXCLODE2_OPTIONS \
+    $EXCLODE3_OPTIONS \
+    $EXCLODE4_OPTIONS
+  quit
+EOF
+  ## delete sync.lock
+  rm -f sync.lock
 fi
-
-
 
 echo "[`date '+%Y-%m-%d %H:%M:%S'`] Backup finished"
 
 fi
-rm -f /backups/data-$FILE_DATE.tar.gz 

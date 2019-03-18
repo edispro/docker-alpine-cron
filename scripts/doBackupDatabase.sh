@@ -150,23 +150,6 @@ cd ${REMOTE_PATH} || mkdir -p ${REMOTE_PATH};
 bye;
 EOF
 
-if [ -d ${LOCAL_PATH} ]; then
-  # Control will enter here if /data exists.
-  echo "[`date '+%Y-%m-%d %H:%M:%S'`] Compressing ${LOCAL_PATH} folder…"
-  $TAR $TAR_OPTIONS /backups/data-$FILE_DATE.tar.gz ${LOCAL_PATH}
-
-  # Sending over FTP
-  echo "[`date '+%Y-%m-%d %H:%M:%S'`] Sending ${LOCAL_PATH} folder over FTP…"
-  ${LFTP} ${LFTP_CMD} <<EOF
-cd ${REMOTE_PATH};
-put /backups/data-${FILE_DATE}.tar.gz;
-bye;
-EOF
-else
-  echo "[`date '+%Y-%m-%d %H:%M:%S'`] ${LOCAL_PATH} folder does not exists."
-  exit 1
-fi
-
 
 # Optional MySQL dump
 # MySQL dump
